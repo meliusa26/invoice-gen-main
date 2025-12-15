@@ -373,7 +373,7 @@ function addItem() {
         <input type="number" placeholder="QTY" class="item-qty" value="1" min="1">
         
         <div style="display: flex; gap: 10px; align-items: center;">
-            <input type="number" placeholder="Harga Satuan" class="item-price" value="0" style="flex: 1;">
+            <input type="number" placeholder="Unit Price" class="item-price" value="0" style="flex: 1;">
             <input type="number" placeholder="Gross Up %" class="item-grossup" value="0" min="0" max="1000" 
                    style="width: 80px;" title="Persentase kenaikan harga">
         </div>
@@ -666,7 +666,7 @@ function previewInvoice() {
                         <th style="padding: 12px 8px; text-align: left; width: 25%;">Scope of Work (SoW)</th>
                         <th style="padding: 12px 8px; text-align: left; width: 20%;">Description</th>
                         <th style="padding: 12px 8px; text-align: center; width: 10%;">QTY</th>
-                        <th style="padding: 12px 8px; text-align: center; width: 15%;">Harga Satuan</th>
+                        <th style="padding: 12px 8px; text-align: center; width: 15%;">Unit Price</th>
                         <th style="padding: 12px 8px; text-align: center; width: 15%;">Total</th>
                     </tr>
                 </thead>
