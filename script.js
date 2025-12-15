@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const invoiceDateInput = document.getElementById('invoiceDate');
 
     if (invoiceNumberInput && !invoiceNumberInput.value) {
-        invoiceNumberInput.value = `INV/${yyyy}${mm}${dd}/001`;
+        invoiceNumberInput.value = `RSC/INV/${yyyy}${mm}${dd}/001`;
     }
 
     if (invoiceDateInput && !invoiceDateInput.value) {
@@ -437,7 +437,7 @@ function removeItem(button) {
 
 // Calculate totals dengan gross up
 function calculateTotals() {
-    let subtotal = 0;
+    let netSubtotal = 0; // nilai SoW (NET)
     let itemsData = [];
 
     document.querySelectorAll('.item-row').forEach(item => {
@@ -450,10 +450,8 @@ function calculateTotals() {
         } else if (dropdown.value) {
             const selectedValue = $(dropdown).val() || dropdown.value;
             if (selectedValue) {
-                const [sowName, _] = selectedValue.split('|');
-                if (sowName !== 'custom') {
-                    name = sowName;
-                }
+                const [sowName] = selectedValue.split('|');
+                if (sowName !== 'custom') name = sowName;
             }
         }
 
@@ -462,29 +460,50 @@ function calculateTotals() {
         const basePrice = parseFloat(item.querySelector('.item-price').value) || 0;
         const grossUpPercent = parseFloat(item.querySelector('.item-grossup').value) || 0;
 
+        // Gross-up per item (kalau ada)
         const finalPrice = basePrice * (1 + grossUpPercent / 100);
         const total = qty * finalPrice;
-        subtotal += total;
 
-        itemsData.push({
-            name,
-            description,
-            qty,
-            finalPrice,
-            total
-        });
+        netSubtotal += total;
+
+       itemsData.push({
+    name,
+    description,
+    qty,
+    finalPrice,
+    total,
+    grossUpPercent
+    });
     });
 
+    // DISKON
     const discountPercent = parseFloat(document.getElementById('discountPercent').value) || 0;
-    const discount = subtotal * (discountPercent / 100);
-    const afterDiscount = subtotal - discount;
+    const discount = netSubtotal * (discountPercent / 100);
+    const afterDiscount = netSubtotal - discount; // NET SoW
 
+    // PPH 23
     const taxPercent = parseFloat(document.getElementById('taxPercent').value) || 0;
-    const tax = afterDiscount * (taxPercent / 100);
-    const grandTotal = afterDiscount + tax;
 
-    return { itemsData, subtotal, discount, afterDiscount, tax, grandTotal };
+    let subtotalDisplay = afterDiscount; // NET
+    let tax = 0;
+    let grandTotal = afterDiscount; // NET diterima
+
+    if (taxPercent > 0) {
+        subtotalDisplay = afterDiscount * (1 + taxPercent / 100);
+        tax = subtotalDisplay - afterDiscount;
+        grandTotal = afterDiscount;
+    }
+
+    return {
+        itemsData,
+        subtotal: subtotalDisplay, // ⬅️ INI YANG DITAMPILKAN
+        discount,
+        afterDiscount, // NET asli (nilai SoW)
+        tax,
+        grandTotal // NET diterima
+    };
 }
+
 
 // Preview Invoice
 function previewInvoice() {
@@ -506,23 +525,28 @@ function previewInvoice() {
         `;
     });
 
+    // Cek apakah ada gross-up
+    const hasGrossUp = itemsData.some(item => item.grossUpPercent > 0);
+    const netLabel = hasGrossUp ? "Net Payment (Gross-up)" : "Net Payment";
+
+
     // LOGIKA: Hide semua intermediate kalo discount = 0 dan tax = 0
     let totalsHTML = '';
 
     if (discount === 0 && tax === 0) {
-        // Kasus 1: Langsung Grand Total
+        // Kasus 1: Langsung Net Payment
         totalsHTML = `
             <tr style="background-color: #f0f0f0; border-top: 2px solid #000; border-bottom: 2px solid #000;">
-                <td colspan="5" style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">Grand Total</td>
+                <td colspan="5" style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">${netLabel}</td>
                 <td style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">${formatNumber(grandTotal)}</td>
             </tr>
         `;
     } else {
-        // Kasus 2: Ada discount atau tax, baru tampilkan Sub Total
+        // Kasus 2: Ada discount atau tax, tampilkan Sub Total
         if (discount > 0 || tax > 0) {
             totalsHTML += `
                 <tr style="border-top: 2px solid #000;">
-                    <td colspan="5" style="padding: 12px 8px; text-align: right; font-weight: bold;">Sub Total</td>
+                    <td colspan="5" style="padding: 12px 8px; text-align: right; font-weight: bold;">Gross-up</td>
                     <td style="padding: 12px 8px; text-align: right; font-weight: bold;">${formatNumber(subtotal)}</td>
                 </tr>
             `;
@@ -544,15 +568,15 @@ function previewInvoice() {
         if (tax > 0) {
             totalsHTML += `
                 <tr>
-                    <td colspan="5" style="padding: 10px 8px; text-align: right; font-weight: bold;">PPH 23</td>
-                    <td style="padding: 10px 8px; text-align: right; font-weight: bold;">${formatNumber(tax)}</td>
+                    <td colspan="5" style="padding: 10px 8px; text-align: right; font-weight: bold;">PPH</td>
+                    <td style="padding: 10px 8px; text-align: right; font-weight: bold; color: #c0392b;">-${formatNumber(tax)}</td>
                 </tr>
             `;
         }
 
         totalsHTML += `
             <tr style="background-color: #f0f0f0; border-bottom: 2px solid #000;">
-                <td colspan="5" style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">Grand Total</td>
+                <td colspan="5" style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">${netLabel}</td>
                 <td style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">${formatNumber(grandTotal)}</td>
             </tr>
         `;
@@ -562,20 +586,27 @@ function previewInvoice() {
     itemsHTML += totalsHTML;
 
     // Cek apakah bank info kosong
+    const npwp = document.getElementById('npwpNumber').value.trim();
     const bankName = document.getElementById('bankName').value.trim();
+    const bankBranch = document.getElementById('bankBranch').value.trim();
     const accountNumber = document.getElementById('accountNumber').value.trim();
     const accountName = document.getElementById('accountName').value.trim();
-    const hasBankInfo = bankName || accountNumber || accountName;
+    const phoneNumber = document.getElementById('phoneNumber').value.trim();
+
+    const hasBankInfo = npwp || bankName || bankBranch || accountNumber || accountName || phoneNumber;
 
     // Generate bank info HTML jika ada data
     let bankInfoHTML = '';
     if (hasBankInfo) {
         bankInfoHTML = `
             <div style="margin-bottom: 40px; font-size: 10pt;">
-                <div>Pembayaran untuk invoice ini mohon ditransfer ke rekening :</div>
-                ${bankName ? `<div>${bankName}</div>` : ''}
-                ${accountNumber ? `<div>No. Rekening : ${accountNumber}</div>` : ''}
-                ${accountName ? `<div>Atas Nama ${accountName}</div>` : ''}
+                <div style="font-weight: bold; margin-bottom: 5px;">Payment Information:</div>
+                ${npwp ? `<div>Tax ID (NPWP): ${npwp}</div>` : ''}
+                ${bankName ? `<div>Bank Name: ${bankName}</div>` : ''}
+                ${bankBranch ? `<div>Branch: ${bankBranch}</div>` : ''}
+                ${accountNumber ? `<div>Account Number: ${accountNumber}</div>` : ''}
+                ${accountName ? `<div>Account Holder: ${accountName}</div>` : ''}
+                ${phoneNumber ? `<div>Phone Number: ${phoneNumber}</div>` : ''}
             </div>
         `;
     } else {
@@ -684,9 +715,8 @@ function previewInvoice() {
             </div>
         </div>
     `;
-
-    // preview.scrollIntoView({ behavior: 'smooth' });
 }
+
 
 // Generate PDF
 function generatePDF() {
