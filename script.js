@@ -761,7 +761,7 @@ function initializeApp() {
 
             // Set contoh gross up
             const grossUpInput = firstRow.querySelector('.item-grossup');
-            grossUpInput.value = 10;
+            grossUpInput.value = 0;
             calculateItemFinalPrice(firstRow);
 
             // Hitung gross up calculator
