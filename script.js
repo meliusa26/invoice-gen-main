@@ -431,7 +431,7 @@ function removeItem(button) {
         button.closest('.item-row').remove();
         previewInvoice();
     } else {
-        alert("Minimal ada 1 barang!");
+        alert("There must be at least 1 SoW!");
     }
 }
 
