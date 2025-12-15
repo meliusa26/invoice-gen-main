@@ -286,16 +286,19 @@ function selectSOW(selectElement) {
         const price = parseFloat(sowPrice) || 0;
         row.querySelector('.item-price').value = price;
 
-        // Set description dengan unit jika ada
-        const descInput = row.querySelector('.item-description');
-        const sowData = SOW_OPTIONS.find(s => s.name === sowName);
-        let description = getSOWDescription(sowName);
+        // // Set description dengan unit jika ada
+        // const descInput = row.querySelector('.item-description');
+        // const sowData = SOW_OPTIONS.find(s => s.name === sowName);
+        // let description = getSOWDescription(sowName);
 
-        if (sowData && sowData.unit) {
-            description += ` (per ${sowData.unit})`;
-        }
+        // if (sowData && sowData.unit) {
+        //     description += ` (per ${sowData.unit})`;
+        // }
 
-        descInput.value = description;
+        // descInput.value = description;
+
+        // Kosongkan description (tidak auto-fill)
+row.querySelector('.item-description').value = '';
     }
 
     // Hitung gross up
@@ -407,12 +410,8 @@ function addItem() {
         qtyInput.addEventListener('input', previewInvoice);
 
         customInput.addEventListener('input', () => {
-            const descInput = newItem.querySelector('.item-description');
-            if (!descInput.value && customInput.value) {
-                descInput.value = customInput.value + " service";
-            }
-            previewInvoice();
-        });
+    previewInvoice();
+    });
 
         // Jika custom input di-focus, set Select2 ke custom option
         customInput.addEventListener('focus', () => {
