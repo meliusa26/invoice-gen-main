@@ -7,7 +7,7 @@ let invoiceCounter = 1;
 
 // Data SOW dengan harga default (DEFINE DI JS)
 const SOW_OPTIONS = [
-    { name: "VT free mirroring IG Reels", price: 29700000 },
+   { name: "VT free mirroring IG Reels", price: 29700000 },
     { name: "Video Tiktok", price: 30000000 },
     { name: "Tiktok story video", price: 5000000 },
     { name: "Tiktok story foto", price: 3000000 },
@@ -38,26 +38,6 @@ const SOW_OPTIONS = [
     { name: "Owning Video content", price: 5000000 },
     { name: "Brand ambassador", price: 0, custom: true }
 ];
-
-// Function untuk Invoice Number
-document.addEventListener('DOMContentLoaded', () => {
-    const d = new Date();
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-
-    const invoiceNumberInput = document.getElementById('invoiceNumber');
-    const invoiceDateInput = document.getElementById('invoiceDate');
-
-    if (invoiceNumberInput && !invoiceNumberInput.value) {
-        invoiceNumberInput.value = `RSC/INV/${yyyy}${mm}${dd}/001`;
-    }
-
-    if (invoiceDateInput && !invoiceDateInput.value) {
-        invoiceDateInput.value = `${yyyy}-${mm}-${dd}`;
-    }
-});
-
 
 // Function untuk format tanggal Indonesia
 function formatDateIndonesian(dateString) {
@@ -126,10 +106,13 @@ function loadInvoiceCounter() {
     const saved = localStorage.getItem('invoiceCounter');
     const savedDate = localStorage.getItem('invoiceDate');
     const today = new Date().toISOString().split('T')[0];
+
     if (saved && savedDate === today) {
         invoiceCounter = parseInt(saved);
+        lastGeneratedDate = savedDate;
     } else {
         invoiceCounter = 1;
+        lastGeneratedDate = today;
         localStorage.setItem('invoiceDate', today);
     }
 }
@@ -140,12 +123,30 @@ function saveInvoiceCounter() {
     localStorage.setItem('invoiceDate', lastGeneratedDate);
 }
 
+// Generate invoice number
+function generateInvoiceNumber() {
+    const currentDate = new Date();
+    const today = currentDate.toISOString().split('T')[0];
+    if (today !== lastGeneratedDate) {
+        invoiceCounter = 1;
+        lastGeneratedDate = today;
+    }
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const companyName = document.getElementById('companyName').value;
+    const companyCode = "RSC"
+    const invoiceNumber = `${companyCode}/INV/${year}${month}${day}/001`;
+    document.getElementById('invoiceNumber').value = invoiceNumber;
+    previewInvoice();
+}
+
 // ========== SELECT2 FUNCTIONS ==========
 
 // Function untuk initialize Select2
 function initializeSelect2(dropdown) {
     $(dropdown).select2({
-        placeholder: 'Choose Scope of Work',
+        placeholder: 'Select Scope of Work',
         allowClear: false,
         width: '100%',
         dropdownParent: $('#itemsContainer'),
@@ -192,11 +193,11 @@ function handleSignatureUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
     if (!file.type.match('image.*')) {
-        alert('Hanya file gambar yang diizinkan!');
+        alert('Only image files are allowed!');
         return;
     }
     if (file.size > 2 * 1024 * 1024) {
-        alert('Ukuran file maksimal 2MB!');
+        alert('Maximum file size 2MB!');
         return;
     }
     const reader = new FileReader();
@@ -248,7 +249,7 @@ function populateSOWDropdown(dropdown) {
 
     // Add custom option
     const customOption = document.createElement('option');
-    customOption.text = "Custom Item - Tentukan harga sendiri";
+    customOption.text = "Custom Item - Set your own price";
     customOption.value = "custom|";
     dropdown.add(customOption);
 }
@@ -286,48 +287,14 @@ function selectSOW(selectElement) {
         const price = parseFloat(sowPrice) || 0;
         row.querySelector('.item-price').value = price;
 
-        // // Set description dengan unit jika ada
-        // const descInput = row.querySelector('.item-description');
-        // const sowData = SOW_OPTIONS.find(s => s.name === sowName);
-        // let description = getSOWDescription(sowName);
-
-        // if (sowData && sowData.unit) {
-        //     description += ` (per ${sowData.unit})`;
-        // }
-
-        // descInput.value = description;
-
-        // Kosongkan description (tidak auto-fill)
-row.querySelector('.item-description').value = '';
+        // Kosongkan description (manual input)
+        const descInput = row.querySelector('.item-description');
+        descInput.value = '';
     }
 
     // Hitung gross up
     calculateItemFinalPrice(row);
     previewInvoice();
-}
-
-// Function untuk get SOW description
-function getSOWDescription(sowName) {
-    const descriptions = {
-        "Tiktok": "Tiktok content creation",
-        "Instagram": "Instagram content creation",
-        "Video Tiktok": "Tiktok video production",
-        "Video Reels": "Instagram Reels production",
-        "Tiktok story video": "Tiktok story video content",
-        "Instagram story video": "Instagram story video content",
-        "Tiktok foto feed": "Tiktok feed photo content",
-        "Instagram feed foto": "Instagram feed photo content",
-        "Youtube short": "Youtube Shorts content",
-        "Live shopping host": "Live shopping hosting per hour",
-        "Talent shoot foto": "Talent photo shoot (exclude transport)",
-        "Talent shoot video": "Talent video shoot (exclude transport)",
-        "Brand ambassador": "Brand ambassador partnership",
-        "Visit transportation fee Jabodetabek": "Transportation fee for Jabodetabek area",
-        "Visit transportation fee Bandung": "Transportation fee for Bandung area",
-        "Visit transportation fee Bali & Remote city": "Transportation fee for Bali & remote cities",
-        "Exclusive 1 month": "Exclusive partnership for 1 month"
-    };
-    return descriptions[sowName] || sowName + " service";
 }
 
 // Function untuk calculate final price dengan gross up
@@ -345,12 +312,12 @@ function calculateItemFinalPrice(row) {
         priceInput.style.borderColor = '#ff9800';
         priceInput.style.backgroundColor = '#fff8e1';
         grossUpInput.style.borderColor = '#ff9800';
-        grossUpInput.style.backgroundColor = '#fff8e1';
+        grossUpInput.style.backgroundColor = grossUpPercent > 0 ? '#fff8e1' : 'white';
     } else {
         priceInput.style.borderColor = '#ddd';
         priceInput.style.backgroundColor = 'white';
         grossUpInput.style.borderColor = '#ddd';
-        grossUpInput.style.backgroundColor = '#fff8e1';
+        grossUpInput.style.backgroundColor = grossUpPercent > 0 ? '#fff8e1' : 'white';
     }
 
     return finalPrice;
@@ -363,7 +330,7 @@ function addItem() {
     newItem.className = 'item-row';
     newItem.innerHTML = `
         <select class="item-sow-dropdown">
-            <option value="">Choose Scope of Work</option>
+            <option value="">Select Scope of Work</option>
         </select>
         
         <input type="text" placeholder="Custom Scope of Work" class="item-name" style="display: none;">
@@ -375,7 +342,7 @@ function addItem() {
         <div style="display: flex; gap: 10px; align-items: center;">
             <input type="number" placeholder="Unit Price" class="item-price" value="0" style="flex: 1;">
             <input type="number" placeholder="Gross Up %" class="item-grossup" value="0" min="0" max="1000" 
-                   style="width: 80px;" title="Persentase kenaikan harga">
+                   style="width: 80px;" title="Percentage of price increase">
         </div>
         
         <button type="button" onclick="removeItem(this)" class="remove-btn">×</button>
@@ -410,8 +377,12 @@ function addItem() {
         qtyInput.addEventListener('input', previewInvoice);
 
         customInput.addEventListener('input', () => {
-    previewInvoice();
-    });
+            const descInput = newItem.querySelector('.item-description');
+            if (!descInput.value && customInput.value) {
+                descInput.value = customInput.value + " service";
+            }
+            previewInvoice();
+        });
 
         // Jika custom input di-focus, set Select2 ke custom option
         customInput.addEventListener('focus', () => {
@@ -431,13 +402,13 @@ function removeItem(button) {
         button.closest('.item-row').remove();
         previewInvoice();
     } else {
-        alert("There must be at least 1 SoW!");
+        alert("At least 1 item is required!");
     }
 }
 
 // Calculate totals dengan gross up
 function calculateTotals() {
-    let netSubtotal = 0; // nilai SoW (NET)
+    let subtotal = 0;
     let itemsData = [];
 
     document.querySelectorAll('.item-row').forEach(item => {
@@ -450,8 +421,10 @@ function calculateTotals() {
         } else if (dropdown.value) {
             const selectedValue = $(dropdown).val() || dropdown.value;
             if (selectedValue) {
-                const [sowName] = selectedValue.split('|');
-                if (sowName !== 'custom') name = sowName;
+                const [sowName, _] = selectedValue.split('|');
+                if (sowName !== 'custom') {
+                    name = sowName;
+                }
             }
         }
 
@@ -460,50 +433,29 @@ function calculateTotals() {
         const basePrice = parseFloat(item.querySelector('.item-price').value) || 0;
         const grossUpPercent = parseFloat(item.querySelector('.item-grossup').value) || 0;
 
-        // Gross-up per item (kalau ada)
         const finalPrice = basePrice * (1 + grossUpPercent / 100);
         const total = qty * finalPrice;
+        subtotal += total;
 
-        netSubtotal += total;
-
-       itemsData.push({
-    name,
-    description,
-    qty,
-    finalPrice,
-    total,
-    grossUpPercent
-    });
+        itemsData.push({
+            name,
+            description,
+            qty,
+            finalPrice,
+            total
+        });
     });
 
-    // DISKON
     const discountPercent = parseFloat(document.getElementById('discountPercent').value) || 0;
-    const discount = netSubtotal * (discountPercent / 100);
-    const afterDiscount = netSubtotal - discount; // NET SoW
+    const discount = subtotal * (discountPercent / 100);
+    const afterDiscount = subtotal - discount;
 
-    // PPH 23
     const taxPercent = parseFloat(document.getElementById('taxPercent').value) || 0;
+    const tax = afterDiscount * (taxPercent / 100);
+    const grandTotal = afterDiscount + tax;
 
-    let subtotalDisplay = afterDiscount; // NET
-    let tax = 0;
-    let grandTotal = afterDiscount; // NET diterima
-
-    if (taxPercent > 0) {
-        subtotalDisplay = afterDiscount * (1 + taxPercent / 100);
-        tax = subtotalDisplay - afterDiscount;
-        grandTotal = afterDiscount;
-    }
-
-    return {
-        itemsData,
-        subtotal: subtotalDisplay, // ⬅️ INI YANG DITAMPILKAN
-        discount,
-        afterDiscount, // NET asli (nilai SoW)
-        tax,
-        grandTotal // NET diterima
-    };
+    return { itemsData, subtotal, discount, afterDiscount, tax, grandTotal };
 }
-
 
 // Preview Invoice
 function previewInvoice() {
@@ -525,29 +477,24 @@ function previewInvoice() {
         `;
     });
 
-    // Cek apakah ada gross-up
-    const hasGrossUp = itemsData.some(item => item.grossUpPercent > 0);
-    const netLabel = hasGrossUp ? "Net Payment" : "Net Payment";
-
-
     // LOGIKA: Hide semua intermediate kalo discount = 0 dan tax = 0
     let totalsHTML = '';
 
     if (discount === 0 && tax === 0) {
-        // Kasus 1: Langsung Net Payment
         totalsHTML = `
             <tr style="background-color: #f0f0f0; border-top: 2px solid #000; border-bottom: 2px solid #000;">
-                <td colspan="5" style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">${netLabel}</td>
+                <td colspan="5" style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">Grand Total</td>
                 <td style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">${formatNumber(grandTotal)}</td>
             </tr>
         `;
     } else {
-        // Kasus 2: Ada discount atau tax, tampilkan Sub Total
         if (discount > 0 || tax > 0) {
             totalsHTML += `
                 <tr style="border-top: 2px solid #000;">
-                    <td colspan="5" style="padding: 12px 8px; text-align: right; font-weight: bold;">Gross-up</td>
-                    <td style="padding: 12px 8px; text-align: right; font-weight: bold;">${formatNumber(subtotal)}</td>
+                    <td colspan="5" style="padding: 12px 8px; text-align: right; font-weight: bold;">Sub Total</td>
+                    <td style="padding: 12px 8px; text-align: right; font-weight: bold;">
+                        ${formatNumber(subtotal)}
+                    </td>
                 </tr>
             `;
         }
@@ -556,11 +503,9 @@ function previewInvoice() {
             totalsHTML += `
                 <tr>
                     <td colspan="5" style="padding: 10px 8px; text-align: right; font-weight: bold;">Discount</td>
-                    <td style="padding: 10px 8px; text-align: right; font-weight: bold;">${formatNumber(discount)}</td>
-                </tr>
-                <tr>
-                    <td colspan="5" style="padding: 10px 8px; text-align: right; font-weight: bold;">Total</td>
-                    <td style="padding: 10px 8px; text-align: right; font-weight: bold;">${formatNumber(afterDiscount)}</td>
+                    <td style="padding: 10px 8px; text-align: right; font-weight: bold;">
+                        ${formatNumber(discount)}
+                    </td>
                 </tr>
             `;
         }
@@ -568,49 +513,69 @@ function previewInvoice() {
         if (tax > 0) {
             totalsHTML += `
                 <tr>
-                    <td colspan="5" style="padding: 10px 8px; text-align: right; font-weight: bold;">PPH</td>
-                    <td style="padding: 10px 8px; text-align: right; font-weight: bold; color: #c0392b;">-${formatNumber(tax)}</td>
+                    <td colspan="5" style="padding: 10px 8px; text-align: right; font-weight: bold;">PPH 23</td>
+                    <td style="padding: 10px 8px; text-align: right; font-weight: bold;">
+                        ${formatNumber(tax)}
+                    </td>
                 </tr>
             `;
         }
 
         totalsHTML += `
-            <tr style="background-color: #f0f0f0; border-bottom: 2px solid #000;">
-                <td colspan="5" style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">${netLabel}</td>
-                <td style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">${formatNumber(grandTotal)}</td>
+            <tr style="background-color: #f0f0f0;">
+                <td colspan="5" style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">
+                    Grand Total
+                </td>
+                <td style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">
+                    ${formatNumber(grandTotal)}
+                </td>
             </tr>
         `;
+
+        if (tax > 0) {
+            const netPayment = grandTotal - tax;
+            totalsHTML += `
+                <tr style="background-color: #e8f5e9; border-bottom: 2px solid #000;">
+                    <td colspan="5" style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">
+                        Net Payment
+                    </td>
+                    <td style="padding: 14px 8px; text-align: right; font-weight: bold; font-size: 12pt;">
+                        ${formatNumber(netPayment)}
+                    </td>
+                </tr>
+            `;
+        }
     }
 
-    // Gabungkan items dan totals
     itemsHTML += totalsHTML;
 
     // Cek apakah bank info kosong
-    const npwp = document.getElementById('npwpNumber').value.trim();
-    const bankName = document.getElementById('bankName').value.trim();
+    const npwp = document.getElementById('npwp').value.trim();
+    const nik = document.getElementById('nik').value.trim();
     const bankBranch = document.getElementById('bankBranch').value.trim();
     const accountNumber = document.getElementById('accountNumber').value.trim();
     const accountName = document.getElementById('accountName').value.trim();
     const phoneNumber = document.getElementById('phoneNumber').value.trim();
 
-    const hasBankInfo = npwp || bankName || bankBranch || accountNumber || accountName || phoneNumber;
+    const hasBankInfo = npwp || nik || bankBranch || accountNumber || accountName || phoneNumber;
 
     // Generate bank info HTML jika ada data
     let bankInfoHTML = '';
     if (hasBankInfo) {
         bankInfoHTML = `
             <div style="margin-bottom: 40px; font-size: 10pt;">
-                <div style="font-weight: bold; margin-bottom: 5px;">Payment Information:</div>
-                ${npwp ? `<div>Tax ID (NPWP): ${npwp}</div>` : ''}
-                ${bankName ? `<div>Bank Name: ${bankName}</div>` : ''}
-                ${bankBranch ? `<div>Branch: ${bankBranch}</div>` : ''}
-                ${accountNumber ? `<div>Account Number: ${accountNumber}</div>` : ''}
-                ${accountName ? `<div>Account Holder: ${accountName}</div>` : ''}
-                ${phoneNumber ? `<div>Phone Number: ${phoneNumber}</div>` : ''}
+                <div style="font-weight: bold; margin-bottom: 8px;">
+                    Payment Information
+                </div>
+
+                ${npwp ? `<div>NPWP : ${npwp}</div>` : ''}
+                ${nik ? `<div>NIK : ${nik}</div>` : ''}
+                ${bankBranch ? `<div>Bank & Branch : ${bankBranch}</div>` : ''}
+                ${accountNumber ? `<div>Account Number : ${accountNumber}</div>` : ''}
+                ${accountName ? `<div>Account Name : ${accountName}</div>` : ''}
+                ${phoneNumber ? `<div>Phone Number : ${phoneNumber}</div>` : ''}
             </div>
         `;
-    } else {
-        bankInfoHTML = `<div style="margin-bottom: 20px;"></div>`;
     }
 
     // Generate signature HTML
@@ -619,7 +584,7 @@ function previewInvoice() {
         signatureHTML = `
             <div style="display: inline-block; text-align: center; width: 300px;">
                 <div style="margin-bottom: 20px;"></div>
-                <img src="${signatureDataURL}" style="max-width: 250px; max-height: 100px; margin-bottom: 10px;" alt="Tanda Tangan">
+                <img src="${signatureDataURL}" style="max-width: 250px; max-height: 100px; margin-bottom: 10px;" alt="Signature">
                 <div style="font-weight: bold; margin-top: 5px;">
                     ${document.getElementById('signatoryName').value}
                 </div>
@@ -649,9 +614,9 @@ function previewInvoice() {
                     ${document.getElementById('companyAddress').value}
                 </div>
                 
-                <!-- GARIS TEBAL -->
+                <!-- Thick Line -->
                 <div style="width: 100%; height: 3px; background-color: #000000; margin-bottom: 3px;"></div>
-                <!-- GARIS TIPIS -->
+                <!-- Thin Line -->
                 <div style="width: 100%; height: 1px; background-color: #000000; margin-bottom: 20px;"></div>
                 
                 <!-- INVOICE Title -->
@@ -662,11 +627,11 @@ function previewInvoice() {
                 </div>
             </div>
             
-            <!-- Layout 2 Kolom -->
+            <!-- Layout 2 Columns -->
             <table style="width: 100%; margin-bottom: 30px; border-collapse: collapse;">
                 <tr>
                     <td style="width: 60%; vertical-align: top; padding-right: 20px;">
-                        <div style="margin-bottom: 5px;"><strong>Kepada Yth.</strong></div>
+                        <div style="margin-bottom: 5px;"><strong>To</strong></div>
                         <div style="font-weight: bold;">${document.getElementById('clientName').value}</div>
                         <div>${document.getElementById('clientAddress').value}</div>
                         <div>${document.getElementById('clientCity').value}</div>
@@ -680,7 +645,7 @@ function previewInvoice() {
                                 <td style="padding: 3px 0;">${document.getElementById('invoiceNumber').value}</td>
                             </tr>
                             <tr>
-                                <td style="padding: 3px 0; font-weight: bold;">Tanggal</td>
+                                <td style="padding: 3px 0; font-weight: bold;">Date</td>
                                 <td style="padding: 3px 0;">:</td>
                                 <td style="padding: 3px 0;">${formatDateIndonesian(document.getElementById('invoiceDate').value)}</td>
                             </tr>
@@ -715,8 +680,9 @@ function previewInvoice() {
             </div>
         </div>
     `;
-}
 
+    // preview.scrollIntoView({ behavior: 'smooth' });
+}
 
 // Generate PDF
 function generatePDF() {
@@ -729,7 +695,7 @@ function generatePDF() {
             logging: false,
             allowTaint: true,
             onclone: function(clonedDoc) {
-                const signatureImg = clonedDoc.querySelector('#pdfContent img[alt="Tanda Tangan"]');
+                const signatureImg = clonedDoc.querySelector('#pdfContent img[alt="Signature"]');
                 if (signatureImg && signatureDataURL) {
                     signatureImg.src = signatureDataURL;
                 }
@@ -740,21 +706,9 @@ function generatePDF() {
             const imgWidth = 190;
             const imgHeight = canvas.height * imgWidth / canvas.width;
             pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-            pdf.save(`${document.getElementById('invoiceNumber').value.replace(/\//g, '-')}.pdf`);
+            pdf.save(`invoice-${document.getElementById('invoiceNumber').value.replace(/\//g, '-')}.pdf`);
         });
     }, 500);
-}
-
-// Gross Up Calculator
-function calculateGrossUp() {
-    const basePrice = parseFloat(document.getElementById('basePrice').value) || 0;
-    const grossUpPercent = parseFloat(document.getElementById('grossUpPercent').value) || 0;
-
-    const result = basePrice * (1 + grossUpPercent / 100);
-    document.getElementById('grossUpResult').value = formatNumber(result);
-
-    // Show notification
-    showNotification(`Gross Up dihitung: ${formatNumber(result)}`);
 }
 
 // Initialize app
@@ -770,9 +724,11 @@ function initializeApp() {
     // Setup signature upload listener
     document.getElementById('signatureUpload').addEventListener('change', handleSignatureUpload);
 
-    // Setup gross up calculator
-    document.getElementById('basePrice').addEventListener('input', calculateGrossUp);
-    document.getElementById('grossUpPercent').addEventListener('input', calculateGrossUp);
+    // Auto-generate invoice number if empty
+    const currentInvoice = document.getElementById('invoiceNumber').value;
+    if (!currentInvoice || currentInvoice === 'FT/003/01/2008') {
+        generateInvoiceNumber();
+    }
 
     // Populate dropdown untuk item pertama
     setTimeout(() => {
@@ -786,16 +742,14 @@ function initializeApp() {
 
             // Set default value
             setTimeout(() => {
-                $(dropdown).val("Tiktok|30000000").trigger('change');
+                const defaultSOW = SOW_OPTIONS.find(s => s.name === "Tiktok");
+                $(dropdown).val(`${defaultSOW.name}|${defaultSOW.price}`).trigger('change');
             }, 100);
 
             // Set contoh gross up
             const grossUpInput = firstRow.querySelector('.item-grossup');
             grossUpInput.value = 0;
             calculateItemFinalPrice(firstRow);
-
-            // Hitung gross up calculator
-            calculateGrossUp();
         }
         previewInvoice();
     }, 300);
