@@ -527,7 +527,7 @@ function previewInvoice() {
 
     // Cek apakah ada gross-up
     const hasGrossUp = itemsData.some(item => item.grossUpPercent > 0);
-    const netLabel = hasGrossUp ? "Net Payment (Gross-up)" : "Net Payment";
+    const netLabel = hasGrossUp ? "Net Payment" : "Net Payment";
 
 
     // LOGIKA: Hide semua intermediate kalo discount = 0 dan tax = 0
