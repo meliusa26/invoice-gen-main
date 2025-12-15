@@ -13,27 +13,27 @@
     <div class="container">
         <h1>📋 Invoice Generator</h1>
 
-        <!-- Company Info -->
+        <!-- Informasi Perusahaan Pengirim -->
         <div class="section">
-            <h2>Shipper Company Information</h2>
+            <h2>Sender Company Information</h2>
             <div class="form-row">
                 <div class="form-group">
                     <label>Company Name</label>
                     <input type="text" id="companyName" value="CV RIEKI SENROKU CREATIVE">
                 </div>
                 <div class="form-group">
-                    <label>Company Address</label>
+                    <label>Address</label>
                     <input type="text" id="companyAddress" value="Jakarta Selatan - Indonesia">
                 </div>
             </div>
         </div>
 
-        <!-- Client Info -->
+        <!-- Informasi Perusahaan Penerima -->
         <div class="section">
             <h2>Recipient Company Information</h2>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Client Name</label>
+                    <label>To</label>
                     <input type="text" id="clientName" value="PT ISM BOGASARI FLOUR JAKARTA">
                 </div>
                 <div class="form-group">
@@ -41,86 +41,88 @@
                     <input type="text" id="clientAddress" value="Jl. Raya Clinchip, Tanjung Priok">
                 </div>
                 <div class="form-group">
-                    <label>Client City</label>
+                    <label>City</label>
                     <input type="text" id="clientCity" value="Jakarta Utara - 14110">
                 </div>
             </div>
         </div>
 
-        <!-- Invoice Details -->
+        <!-- Detail Invoice -->
         <div class="section">
-            <h2>Detail Invoice</h2>
+            <h2>Invoice Details</h2>
             <div class="form-row">
                 <div class="form-group" style="position: relative;">
-                    <label>Invoice Number
-                    </label>
-                    <input type="text" id="invoiceNumber" >
+                    <label>Invoice Number</label>
+                    <input type="text" id="invoiceNumber" placeholder="Click Generate to create number">
                 </div>
                 <div class="form-group">
                     <label>Invoice Date</label>
                     <input type="date" id="invoiceDate">
                     <small style="color: #666; margin-top: 5px; display: block;">
-                        Default: Today
+                        Default: today
                     </small>
                 </div>
             </div>
         </div>
 
-        <!-- Bank Info -->
-<!-- Payment Information -->
-<div class="section">
-    <h2>Payment Information</h2>
-    <div class="form-row">
-        <div class="form-group">
-            <label>Tax Identification Number (NPWP)</label>
-            <input type="text" id="npwpNumber" placeholder="00.000.000.0-000.000">
-        </div>
-        <div class="form-group">
-            <label>Bank Name</label>
-            <input type="text" id="bankName" placeholder="Bank Name">
-        </div>
-        <div class="form-group">
-            <label>Branch</label>
-            <input type="text" id="bankBranch" placeholder="Bank Branch">
-        </div>
-    </div>
-    <div class="form-row">
-        <div class="form-group">
-            <label>Account Number</label>
-            <input type="text" id="accountNumber" placeholder="Account Number">
-        </div>
-        <div class="form-group">
-            <label>Account Holder Name</label>
-            <input type="text" id="accountName" placeholder="Account Holder Name">
-        </div>
-        <div class="form-group">
-            <label>Phone Number</label>
-            <input type="text" id="phoneNumber" placeholder="Phone Number">
-        </div>
-    </div>
-</div>
-
-        <!-- Items Section dengan Dropdown SOW -->
+        <!-- Informasi Pembayaran -->
         <div class="section">
-            <h2>Scope of Work <button type="button" onclick="addItem()">+ Add SoW</button></h2>
+            <h2>Payment Information</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tax ID (NPWP)</label>
+                    <input type="text" id="npwp">
+                </div>
+                <div class="form-group">
+                    <label>ID Number (NIK)</label>
+                    <input type="text" id="nik">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Bank & Branch</label>
+                    <input type="text" id="bankBranch" placeholder="Example: BCA - KCP Sudirman">
+                </div>
+                <div class="form-group">
+                    <label>Account Number</label>
+                    <input type="text" id="accountNumber">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Account Name</label>
+                    <input type="text" id="accountName">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" id="phoneNumber">
+                </div>
+            </div>
+        </div>
+
+        <!-- Daftar Barang/Jasa -->
+        <div class="section">
+            <h2>Items/Services <button type="button" onclick="addItem()">+ Add Item</button></h2>
             <div id="itemsContainer">
                 <div class="item-row">
                     <!-- Dropdown SOW akan diisi oleh JavaScript -->
                     <select class="item-sow-dropdown" onchange="selectSOW(this)">
-                        <option value="">Choose Scope of Work</option>
-                        <!-- Options akan ditambah oleh JS -->
+                        <option value="">Select Scope of Work</option>
+                        <!-- Options will be added by JS -->
                     </select>
 
                     <input type="text" placeholder="Custom Scope of Work" class="item-name" style="display: none;">
 
                     <input type="text" placeholder="Description" class="item-description" value="">
 
-                    <input type="number" placeholder="QTY" class="item-qty" value="1" min="1" onchange="previewInvoice()">
+                    <input type="number" placeholder="Quantity" class="item-qty" value="1" min="1" onchange="previewInvoice()">
 
                     <div style="display: flex; gap: 10px; align-items: center;">
                         <input type="number" placeholder="Unit Price" class="item-price" value="0" style="flex: 1;" onchange="previewInvoice()">
                         <input type="number" placeholder="Gross Up %" class="item-grossup" value="0" min="0" max="1000"
-                               style="width: 80px;" title="Persentase kenaikan harga" onchange="previewInvoice()">
+                               style="width: 80px;" title="Percentage price increase" onchange="previewInvoice()">
                     </div>
 
                     <button type="button" onclick="removeItem(this)" class="remove-btn">×</button>
@@ -128,38 +130,16 @@
             </div>
         </div>
 
-        <!-- Gross Up Calculator (optional) -->
-        <div class="section" style="background: #f8f9fa; padding: 15px;">
-            <h3>📊 Gross Up Calculator</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div>
-                    <label>Base Price</label>
-                    <input type="number" id="basePrice" placeholder="Harga dasar" value="1000000">
-                </div>
-                <div>
-                    <label>Gross Up (%)</label>
-                    <input type="number" id="grossUpPercent" placeholder="Persentase" value="10" min="0" max="1000">
-                </div>
-                <div>
-                    <label>Gross Up Result</label>
-                    <input type="text" id="grossUpResult" readonly style="background: #e9ecef;">
-                </div>
-                <div style="display: flex; align-items: flex-end;">
-                    <button onclick="calculateGrossUp()" style="padding: 10px 15px;">Count</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Additional Info -->
+        <!-- Informasi Tambahan -->
         <div class="section">
-            <h2>Additional Info</h2>
+            <h2>Additional Information</h2>
             <div class="form-row">
                 <div class="form-group">
-                    <label>Discount (%) <small>(fill in 0 to hide)</small></label>
+                    <label>Discount (%) <small>(enter 0 to hide)</small></label>
                     <input type="number" id="discountPercent" value="0" min="0" max="100">
                 </div>
                 <div class="form-group">
-                    <label>PPH 23 (%) <small>(fill in 0 to hide)</small></label>
+                    <label>Tax 23% (PPH 23) <small>(enter 0 to hide)</small></label>
                     <input type="number" id="taxPercent" value="0" min="0" max="100">
                 </div>
             </div>
@@ -169,7 +149,7 @@
                     <input type="text" id="signatoryName" value="Sherly Fanny Heriyanti">
                 </div>
                 <div class="form-group">
-                    <label>Signatory Title</label>
+                    <label>Position</label>
                     <input type="text" id="signatoryTitle" value="CEO">
                 </div>
             </div>
