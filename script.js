@@ -446,8 +446,7 @@ function calculateTotals() {
         });
     });
 
-    const discountPercent = parseFloat(document.getElementById('discountPercent').value) || 0;
-    const discount = subtotal * (discountPercent / 100);
+    const discount = parseFloat(document.getElementById('discountAmount').value) || 0;
     const afterDiscount = subtotal - discount;
 
     const taxPercent = parseFloat(document.getElementById('taxPercent').value) || 0;
@@ -502,9 +501,11 @@ function previewInvoice() {
         if (discount > 0) {
             totalsHTML += `
                 <tr>
-                    <td colspan="5" style="padding: 10px 8px; text-align: right; font-weight: bold;">Discount</td>
-                    <td style="padding: 10px 8px; text-align: right; font-weight: bold;">
-                        ${formatNumber(discount)}
+                    <td colspan="5" style="padding: 10px 8px; text-align: right; font-weight: bold; color: #d32f2f;">
+                        Discount
+                    </td>
+                    <td style="padding: 10px 8px; text-align: right; font-weight: bold; color: #d32f2f;">
+                        -${formatNumber(discount)}
                     </td>
                 </tr>
             `;
