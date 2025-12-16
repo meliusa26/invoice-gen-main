@@ -514,7 +514,7 @@ function previewInvoice() {
         if (tax > 0) {
             totalsHTML += `
                 <tr>
-                    <td colspan="5" style="padding: 10px 8px; text-align: right; font-weight: bold;">PPH 23</td>
+                    <td colspan="5" style="padding: 10px 8px; text-align: right; font-weight: bold;">PPH</td>
                     <td style="padding: 10px 8px; text-align: right; font-weight: bold;">
                         ${formatNumber(tax)}
                     </td>
