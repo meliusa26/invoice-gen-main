@@ -544,13 +544,12 @@ function previewInvoice() {
 
     // Cek apakah bank info kosong
     const npwp = document.getElementById('npwp').value.trim();
-    const nik = document.getElementById('nik').value.trim();
     const bankBranch = document.getElementById('bankBranch').value.trim();
     const accountNumber = document.getElementById('accountNumber').value.trim();
     const accountName = document.getElementById('accountName').value.trim();
     const phoneNumber = document.getElementById('phoneNumber').value.trim();
 
-    const hasBankInfo = npwp || nik || bankBranch || accountNumber || accountName || phoneNumber;
+    const hasBankInfo = npwp || bankBranch || accountNumber || accountName || phoneNumber;
 
     // Generate bank info HTML jika ada data
     let bankInfoHTML = '';
@@ -562,7 +561,6 @@ function previewInvoice() {
                 </div>
 
                 ${npwp ? `<div>NPWP : ${npwp}</div>` : ''}
-                ${nik ? `<div>NIK : ${nik}</div>` : ''}
                 ${bankBranch ? `<div>Bank & Branch : ${bankBranch}</div>` : ''}
                 ${accountNumber ? `<div>Account Number : ${accountNumber}</div>` : ''}
                 ${accountName ? `<div>Account Name : ${accountName}</div>` : ''}
@@ -664,13 +662,30 @@ function previewInvoice() {
                 </tbody>
             </table>
             
-            <!-- Bank Info -->
-            ${bankInfoHTML}
-            
-            <!-- Signature -->
-            <div style="text-align: right; margin-top: ${hasBankInfo ? '0px' : '10px'};">
-                ${signatureHTML}
-            </div>
+            <!-- Payment Info & Signature (Sejajar) -->
+            <table style="width: 100%; margin-top: 40px; font-size: 10pt;">
+                <tr>
+                    <!-- KOLOM KIRI: PAYMENT INFORMATION -->
+                    <td style="width: 50%; vertical-align: top;">
+                        ${hasBankInfo ? `
+                            <div style="font-weight: bold; margin-bottom: 8px;">
+                                Payment Information
+                            </div>
+                            ${npwp ? `<div>NPWP : ${npwp}</div>` : ''}
+                            ${bankBranch ? `<div>Bank & Branch : ${bankBranch}</div>` : ''}
+                            ${accountNumber ? `<div>Account No : ${accountNumber}</div>` : ''}
+                            ${accountName ? `<div>Account Name : ${accountName}</div>` : ''}
+                            ${phoneNumber ? `<div>Phone : ${phoneNumber}</div>` : ''}
+                        ` : ''}
+                    </td>
+
+                    <!-- KOLOM KANAN: SIGNATURE -->
+                    <td style="width: 50%; vertical-align: top; text-align: right;">
+                        ${signatureHTML}
+                    </td>
+                </tr>
+            </table>
+
         </div>
     `;
 
