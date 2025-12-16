@@ -34,7 +34,7 @@ const SOW_OPTIONS = [
     { name: "Baby udon in frame", price: 10000000 },
     { name: "Guest speaker", price: 11000000 },
     { name: "Exclusive 1 month", price: 25000000 },
-    { name: "Boost adds", price: 1000000 },
+    { name: "Boost ads", price: 1000000 },
     { name: "Owning Video content", price: 5000000 },
     { name: "Brand ambassador", price: 0, custom: true }
 ];
