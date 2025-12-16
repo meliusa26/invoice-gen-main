@@ -376,14 +376,6 @@ function addItem() {
 
         qtyInput.addEventListener('input', previewInvoice);
 
-        customInput.addEventListener('input', () => {
-            const descInput = newItem.querySelector('.item-description');
-            if (!descInput.value && customInput.value) {
-                descInput.value = customInput.value + " service";
-            }
-            previewInvoice();
-        });
-
         // Jika custom input di-focus, set Select2 ke custom option
         customInput.addEventListener('focus', () => {
             $(dropdown).val('custom|').trigger('change');
